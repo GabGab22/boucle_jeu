@@ -325,10 +325,9 @@ t_tir* DeplacementMunition(t_tir*tir)
         courant->posmx=courant->posmx+courant->depmx;
         if((courant->posmx>SCREEN_W) || (courant->posmx<0))
         {
-            courant->etat=0;
+            courant->etat=1;
 
         }
-        printf("%d\n",courant->posmx);
 
         if(courant->etat==0)
         {
@@ -384,7 +383,7 @@ t_tir* TirEnnemi(t_tir* tirEnnemi,t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie)
     {
         if(tabEnnemi[i].etat)
         {
-            if(rand()%50==0)
+            if(rand()%20==0)
             {
                 ancre=(t_tir*)malloc(1*sizeof(t_tir));
                 ancre->image=munitionEnnemie;
