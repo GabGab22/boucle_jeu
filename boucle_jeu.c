@@ -231,12 +231,12 @@ void ScrollingMur(t_Mur*mur,t_Perso*perso)
     }
 }
 
-void Collision(t_Perso*perso,t_Mur*mur)
+void Collision(t_Perso*perso,t_Mur*mur,t_tir*titPerso,t_tir*tirEnnemi,t_Ennemi tabEnnemi[25])
 {
     //il y a collision personnage/murs si le pixel de mur
     // aux positions données du personnage est noir
-    // le personnage étant un rond on a décidé de regarder
-    //les pixels situés à pi/4 du centre du perso
+    // le personnage étant une ellipse on a décidé de regarder
+    //les pixels situés à pi/4 +k*pi/2 du centre du perso
     if((getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)*(0.35+0.5),perso->posy+(perso->image->h)*(0.35+0.5))==0))
     {
         perso->etat=MORT;
@@ -253,6 +253,24 @@ void Collision(t_Perso*perso,t_Mur*mur)
     {
         perso->etat=MORT;
     }
+
+    //collision tirEnnemi/perso
+    //on calcule la distance entre le milieu du personnage et le milieu du missile
+    //si cette distance est inférieure à une constante le personnage meurt et le missile disparait
+    t_tir*courant;
+    courant=tirEnnemi;
+    while(courant!=NULL)
+    {
+        if(sqrt(pow(perso->posx+perso->image->w/2-courant->posmx-courant->image->w/2,2)+pow(perso->posy+perso->image->h/2-courant->posmy-courant->image->h/2,2))<30)
+        {
+            perso->etat=MORT;
+            courant->etat=0;
+        }
+        courant=courant->suiv;
+    }
+
+
+
 }
 
 void DeplacementEnnemis(t_Ennemi tabEnnemi[25],t_Mur*mur)
@@ -719,12 +737,13 @@ int jouer(int niveau )
         DeplacementPerso(perso);
         DeplacementEnnemis(tabEnnemi,mur);
         ScrollingMur(mur,perso);
-        Collision(perso, mur);
         tirPerso=TirPerso(tirPerso,perso,munitionPerso);
         tirPerso=DeplacementMunition(tirPerso);
         tirEnnemi=TirEnnemi(tirEnnemi,tabEnnemi,munitionEnnemie,mur);
         tirEnnemi=DeplacementMunition(tirEnnemi);
+        Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi);
         Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,tirEnnemi);
+
         rest(20);
 
     }
