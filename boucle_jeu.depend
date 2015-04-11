@@ -1,0 +1,71 @@
+# depslib dependency file v1.0
+1428320357 source:c:\users\gabrielle\desktop\boucle_jeu\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<allegro.h>
+	<math.h>
+	"boucle_jeu.h"
+
+1428354681 source:c:\users\gabrielle\desktop\boucle_jeu\boucle_jeu.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<allegro.h>
+	<math.h>
+
+1428316140 c:\users\gabrielle\desktop\boucle_jeu\boucle_jeu.h
+
+1428355096 source:h:\boucle_jeu\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<allegro.h>
+	<math.h>
+	"boucle_jeu.h"
+
+1428316142 h:\boucle_jeu\boucle_jeu.h
+
+1428354900 source:h:\boucle_jeu\boucle_jeu.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<allegro.h>
+	<math.h>
+
+1428656526 source:f:\boucle_jeu\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<allegro.h>
+	<math.h>
+	<time.h>
+	"boucle_jeu.h"
+
+1428316142 f:\boucle_jeu\boucle_jeu.h
+
+1428683374 source:f:\boucle_jeu\boucle_jeu.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<allegro.h>
+	<math.h>
+
+1428656526 source:f:\boucle_jeu+tir\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<allegro.h>
+	<math.h>
+	<time.h>
+	"boucle_jeu.h"
+
+1428316142 f:\boucle_jeu+tir\boucle_jeu.h
+
+1428740924 source:f:\boucle_jeu+tir\boucle_jeu.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<allegro.h>
+	<math.h>
+
