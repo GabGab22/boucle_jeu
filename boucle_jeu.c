@@ -299,7 +299,6 @@ t_tir*TirPerso(t_tir*tirPerso,t_Perso*perso,BITMAP*munitionPerso)
 {
     if(key[KEY_SPACE])
     {
-
         t_tir*nouv;
 
         nouv=(t_tir*)malloc(1*sizeof(t_tir));
@@ -325,7 +324,7 @@ t_tir* DeplacementMunition(t_tir*tir)
         courant->posmx=courant->posmx+courant->depmx;
         if((courant->posmx>SCREEN_W) || (courant->posmx<0))
         {
-            courant->etat=1;
+            courant->etat=0;
 
         }
 
@@ -374,7 +373,7 @@ void DeplacementBoss(t_Boss*boss)
 
 }
 
-t_tir* TirEnnemi(t_tir* tirEnnemi,t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie)
+t_tir* TirEnnemi(t_tir* tirEnnemi,t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie,t_Mur* mur)
 {
     int i;
     t_tir*ancre=NULL;
@@ -383,17 +382,16 @@ t_tir* TirEnnemi(t_tir* tirEnnemi,t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie)
     {
         if(tabEnnemi[i].etat)
         {
-            if(rand()%20==0)
+            if(rand()%100==0)
             {
                 ancre=(t_tir*)malloc(1*sizeof(t_tir));
                 ancre->image=munitionEnnemie;
                 ancre->etat=1;
                 ancre->depmx=-5;
-                ancre->posmx=tabEnnemi[i].posx;
-                ancre->posmy=tabEnnemi[i].posy+tabEnnemi[i].image->h;
+                ancre->posmx=tabEnnemi[i].posx-mur->posx;
+                ancre->posmy=tabEnnemi[i].posy+tabEnnemi[i].image->h/2;
                 ancre->suiv=tirEnnemi;
                 tirEnnemi=ancre;
-                printf("tir");
             }
         }
 
@@ -724,7 +722,7 @@ int jouer(int niveau )
         Collision(perso, mur);
         tirPerso=TirPerso(tirPerso,perso,munitionPerso);
         tirPerso=DeplacementMunition(tirPerso);
-        tirEnnemi=TirEnnemi(tirEnnemi,tabEnnemi,munitionEnnemie);
+        tirEnnemi=TirEnnemi(tirEnnemi,tabEnnemi,munitionEnnemie,mur);
         tirEnnemi=DeplacementMunition(tirEnnemi);
         Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,tirEnnemi);
         rest(20);
