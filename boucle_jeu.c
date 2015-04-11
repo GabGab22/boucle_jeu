@@ -4,7 +4,7 @@
 #include <allegro.h>
 #include <math.h>
 
-#define SCROLL 1
+#define SCROLL 5
 
 typedef struct Mur
 {
@@ -231,7 +231,7 @@ void ScrollingMur(t_Mur*mur,t_Perso*perso)
     }
 }
 
-void Collision(t_Perso*perso,t_Mur*mur,t_tir*titPerso,t_tir*tirEnnemi,t_Ennemi tabEnnemi[25])
+void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi tabEnnemi[25])
 {
     //il y a collision personnage/murs si le pixel de mur
     // aux positions données du personnage est noir
@@ -259,6 +259,7 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*titPerso,t_tir*tirEnnemi,t_Ennemi t
     //si cette distance est inférieure à une constante le personnage meurt et le missile disparait
     t_tir*courant;
     courant=tirEnnemi;
+
     while(courant!=NULL)
     {
         if(sqrt(pow(perso->posx+perso->image->w/2-courant->posmx-courant->image->w/2,2)+pow(perso->posy+perso->image->h/2-courant->posmy-courant->image->h/2,2))<30)
@@ -269,6 +270,42 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*titPerso,t_tir*tirEnnemi,t_Ennemi t
         courant=courant->suiv;
     }
 
+    //collision tirPerso/Ennemi
+
+    courant=tirPerso;
+    int i;
+
+    while(courant!=NULL)
+    {
+        for(i=0; i<25; i++)
+        {
+            if(tabEnnemi[i].etat==1 && courant->etat==1)
+            {
+                if(sqrt(pow(tabEnnemi[i].posx+tabEnnemi[i].image->w/2-mur->posx-courant->posmx-courant->image->w/2,2)+pow(tabEnnemi[i].posy+tabEnnemi[i].image->h/2-courant->posmy-courant->image->h/2,2))<30)
+                {
+                    tabEnnemi[i].etat=0;
+                    courant->etat=0;
+                }
+            }
+
+        }
+        courant=courant->suiv;
+    }
+
+    //collision perso/ennemis
+
+    for(i=0; i<25; i++)
+    {
+        if(tabEnnemi[i].etat==1)
+        {
+            if(sqrt(pow(perso->posx+perso->image->w/2-tabEnnemi[i].posx-tabEnnemi[i].image->w/2+mur->posx,2)+pow(perso->posy+perso->image->h/2-tabEnnemi[i].posy-tabEnnemi[i].image->h/2,2))<30)
+            {
+                perso->etat=MORT;
+                tabEnnemi[i].etat=0;
+            }
+        }
+
+    }
 
 
 }
@@ -339,12 +376,18 @@ t_tir* DeplacementMunition(t_tir*tir)
 
     while(courant!=NULL)
     {
-        courant->posmx=courant->posmx+courant->depmx;
-        if((courant->posmx>SCREEN_W) || (courant->posmx<0))
+        if(courant->etat==1)
         {
-            courant->etat=0;
+            courant->posmx=courant->posmx+courant->depmx;
 
+            if((courant->posmx>SCREEN_W) || (courant->posmx<0))
+            {
+                courant->etat=0;
+
+            }
         }
+
+
 
         if(courant->etat==0)
         {
@@ -352,16 +395,22 @@ t_tir* DeplacementMunition(t_tir*tir)
             {
                 tir=tir->suiv;
                 free(courant);
-
+                courant=tir;
             }
             else
             {
-              prec->suiv=courant->suiv;
-            free(courant);
+                prec->suiv=courant->suiv;
+                free(courant);
+                courant=prec->suiv;
             }
+
         }
-        prec=courant;
-        courant=courant->suiv;
+        else
+        {
+            prec=courant;
+            courant=courant->suiv;
+        }
+
     }
     return tir;
 }
@@ -405,7 +454,7 @@ t_tir* TirEnnemi(t_tir* tirEnnemi,t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie,
                 ancre=(t_tir*)malloc(1*sizeof(t_tir));
                 ancre->image=munitionEnnemie;
                 ancre->etat=1;
-                ancre->depmx=-5;
+                ancre->depmx=-SCROLL-5;
                 ancre->posmx=tabEnnemi[i].posx-mur->posx;
                 ancre->posmy=tabEnnemi[i].posy+tabEnnemi[i].image->h/2;
                 ancre->suiv=tirEnnemi;
