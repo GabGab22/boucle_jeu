@@ -116,44 +116,60 @@ t_Mur* AlloueMur(int niveau)
 }
 
 
-void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Boss*boss,t_tir*premier)
+void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Boss*boss,t_tir*tirPerso,t_tir*missile)
 {
 
-    BITMAP *page;
+    BITMAP *page; //création d'un double buffer
     int i;
     page=create_bitmap(SCREEN_W,SCREEN_H);
     clear_bitmap(page);
-
+    t_tir* courant;
     blit(fond,page,0,0,0,0,SCREEN_W,SCREEN_H);
     masked_blit(mur->image,page,mur->posx,0,0,0,SCREEN_W,SCREEN_H);
+
+    //affichage des ennemis
     for(i=0; i<25; i++)
     {
         if(tabEnnemi[i].etat)
         {
             masked_blit(tabEnnemi[i].image,page,0,0,tabEnnemi[i].posx-mur->posx,tabEnnemi[i].posy,tabEnnemi[i].image->w,tabEnnemi[i].image->h);
-        }
-
-    }
-    if(boss!=NULL)
-    {
-        masked_blit(boss->image,page,0,0,boss->posx,boss->posy,boss->image->w,boss->image->h);
-    }
-        t_tir* courant;
-    courant=premier;
-
+            //affichage des tirs ennemis
+    courant=missile;
     while(courant!=NULL)
     {
         if(courant->etat==1)
         {
-        courant->image=load_bitmap("munition2.bmp",NULL);
-        masked_blit(courant->image,page,0,0,courant->posmx,courant->posmy,courant->image->w,courant->image->h);
+            masked_blit(courant->image,page,0,0,courant->posmx,courant->posmy,courant->image->w,courant->image->h);
+        }
+        courant=courant->suiv;
+
+    }
+        }
+
+    }
+
+    //affichage du boss si on est en fin de niveau
+    if(boss!=NULL)
+    {
+        masked_blit(boss->image,page,0,0,boss->posx,boss->posy,boss->image->w,boss->image->h);
+    }
+
+    courant=tirPerso;
+    //affichage des tirs du personnage
+    while(courant!=NULL)
+    {
+        if(courant->etat==1)
+        {
+            masked_blit(courant->image,page,0,0,courant->posmx,courant->posmy,courant->image->w,courant->image->h);
 
         }
 
         courant=courant->suiv;
     }
 
-    masked_blit(perso->image,page,0,0,perso->posx,perso->posy,perso->image->w,perso->image->h);
+
+
+    masked_blit(perso->image,page,0,0,perso->posx,perso->posy,perso->image->w,perso->image->h);//affichage du personnage
 
 
     //Affichage buffer
@@ -170,7 +186,7 @@ void DeplacementPerso(t_Perso*perso)
         if(key[KEY_UP]) //si on appuie sur la touche haut
         {
             if(perso->posy>0)
-            perso->posy=perso->posy-(perso->depy);//l'ordonnée est diminué
+                perso->posy=perso->posy-(perso->depy);//l'ordonnée est diminué
 
         }
         else if (key[KEY_DOWN]) //si on appuie sur la touche du bas
@@ -192,34 +208,35 @@ void DeplacementPerso(t_Perso*perso)
 
         }
     }
-    else
+    else //si il y a eu collision avec un mur ou un missile
     {
-        perso->posy=perso->posy+10;
-        if (perso->posy>SCREEN_H)
+        perso->posy=perso->posy+10; //le personage n'est pus déplacé par le joueur
+        if (perso->posy>SCREEN_H)  //il desend tout seul
         {
-            perso->fin=1;
+            perso->fin=1;//quand il a disparu de l'écran son état change pour qu'on puisse sortir de la boucle de jeu
         }
     }
 }
 
 void ScrollingMur(t_Mur*mur,t_Perso*perso)
 {
-    if(perso->etat==VIVANT)
+    if(perso->etat==VIVANT)//si le personnage est vivant
     {
-        mur->posx=mur->posx+mur->depx;
+        mur->posx=mur->posx+mur->depx;//les murs se déplacent
 
-    if(mur->posx>mur->image->w-SCREEN_W)
-    {
-        mur->fin=1;
+        if(mur->posx>mur->image->w-SCREEN_W)//si on arrive au bout de l'image
+        {
+            mur->fin=1; //changement d'état pour signifier qu'on arrête le scrollling
+        }
     }
-    }
-
-
 }
 
 void Collision(t_Perso*perso,t_Mur*mur)
 {
-    //il y a collision personnage/murs si le pixel de mur au centre du personnage est noir
+    //il y a collision personnage/murs si le pixel de mur
+    // aux positions données du personnage est noir
+    // le personnage étant un rond on a décidé de regarder
+    //les pixels situés à pi/4 du centre du perso
     if((getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)*(0.35+0.5),perso->posy+(perso->image->h)*(0.35+0.5))==0))
     {
         perso->etat=MORT;
@@ -232,11 +249,12 @@ void Collision(t_Perso*perso,t_Mur*mur)
     {
         perso->etat=MORT;
     }
-   else if((getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)*(0.35+0.5),perso->posy+(perso->image->h)*(-0.35+0.5))==0))
+    else if((getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)*(0.35+0.5),perso->posy+(perso->image->h)*(-0.35+0.5))==0))
     {
         perso->etat=MORT;
     }
 }
+
 void DeplacementEnnemis(t_Ennemi tabEnnemi[25],t_Mur*mur)
 {
     int i;
@@ -271,31 +289,32 @@ t_Boss* AlloueBoss()
 
     boss=(t_Boss*)malloc(1*sizeof(t_Boss));
     boss->posx=350;
-     boss->posy=100;
+    boss->posy=100;
     boss->fin=0;
 
     return boss;
 }
-t_tir*AlloueMunition(t_tir*premier,t_Perso*perso)
+
+t_tir*TirPerso(t_tir*tirPerso,t_Perso*perso,BITMAP*munitionPerso)
 {
     t_tir*nouv;
 
     nouv=(t_tir*)malloc(1*sizeof(t_tir));
-
+    nouv->image=munitionPerso;
     nouv->posmx=perso->posx+perso->image->w-10;
     nouv->posmy=perso->posy+perso->image->h-40;
     nouv->depmx=5;
     nouv->etat=1;
-    nouv->suiv=premier;
-
+    nouv->suiv=tirPerso;
     return nouv;
 
 }
 ///////////////////////////////////////////////////
-void DeplacementMunition(t_tir*premier)
+t_tir* DeplacementMunition(t_tir*tir)
 {
     t_tir*courant;
-    courant=premier;
+    courant=tir;
+    t_tir*prec=NULL;
 
     while(courant!=NULL)
     {
@@ -305,45 +324,32 @@ void DeplacementMunition(t_tir*premier)
             courant->etat=0;
 
         }
+        if(courant->etat==0)
+        {
+            if(courant==tir)
+            {
+                tir=tir->suiv;
+                free(courant);
+
+                break;
+
+            }
+            prec->suiv=courant->suiv;
+            free(courant);
+            break;
+        }
+        prec=courant;
         courant=courant->suiv;
     }
-
+    return tir;
 }
 ////////////////////////////////////////////////////////////////
-t_tir* SuppressionMunition(t_tir*premier)
-{
-    t_tir*courant;
-    courant=premier;
-    t_tir*prec=NULL;
-
-    while(courant!=NULL)
-    {
-      if(courant->etat==0)
-      {
-          if(courant==premier)
-          {
-              premier=premier->suiv;
-              free(courant);
-
-              break;
-
-          }
-          prec->suiv=courant->suiv;
-          free(courant);
-          break;
-      }
-      prec=courant;
-      courant=courant->suiv;
-    }
-    return premier;
-}
-
 void DeplacementBoss(t_Boss*boss)
 {
     if ( rand()%20==0 )
     {
         // Nouveau vecteur déplacement
-       boss->depy=rand()%(12-5);
+        boss->depy=rand()%(12-5);
         boss->depx=rand()%(12-5);
     }
     if(boss->fin==VIVANT)
@@ -357,84 +363,56 @@ void DeplacementBoss(t_Boss*boss)
             boss->depy=-boss->depy;
         }
         boss->posx= boss->posx+ boss->depx;
-         boss->posy= boss->posy+ boss->depy;
+        boss->posy= boss->posy+ boss->depy;
     }
 
 
 }
 
-t_tir* AlloueMunitionEnnemie(t_tir*ancre)
-{
-  t_tir*nouv;
-
-  nouv=(t_tir*)malloc(1*sizeof(t_tir));
-  nouv->etat=1;
-  nouv->depmx=-5;
-  nouv->suiv=ancre;
-
-  return nouv;
-}
-
-t_tir* TirEnnemi(t_Ennemi tabEnnemi[25])
+t_tir* TirEnnemi(t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie)
 {
     int i;
     t_tir*ancre=NULL;
 
-    if(rand()%100<=50)
+    for(i=0; i<25; i++)
     {
-        for(i=0;i<25;i++)
+        if(tabEnnemi[i].etat)
         {
-            if(tabEnnemi[i].etat)
+            if(rand()%50==0)
             {
-               ancre=AlloueMunitionEnnemie(ancre);
-               ancre->posmx=tabEnnemi[i].posx;
-               ancre->posmy=tabEnnemi[i].posy+tabEnnemi[i].image->h;
-               DeplacementMunition(ancre);
-               ancre=SuppressionMunition(ancre);
+                ancre=(t_tir*)malloc(1*sizeof(t_tir));
+                ancre->image=munitionEnnemie;
+                ancre->etat=1;
+                ancre->depmx=-5;
+                ancre->posmx=tabEnnemi[i].posx;
+                ancre->posmy=tabEnnemi[i].posy+tabEnnemi[i].image->h;
+                ancre->suiv=NULL;
+                printf("tir");
             }
         }
+
     }
+
     return ancre;
-}
-
-void AffichageMunition(t_tir*ancre,t_Mur*mur,t_Ennemi tabEnnemi[25])
-{
-    t_tir*courant;
-    courant=ancre;
-    int i;
-
-    while(courant!=NULL)
-    {
-        for(i=0;i<25;i++)
-        {
-           if(mur->posx+mur->image->w>tabEnnemi[i].posx)
-            {
-        if(courant->etat==1)
-        {
-            courant->image=load_bitmap_check("laser.bmp");
-            masked_blit(courant->image,screen,0,0,courant->posmx,courant->posmy,courant->image->w,courant->image->h);
-        }
-        courant=courant->suiv;
-        }
-
-    }
-    }
 }
 
 int jouer(int niveau )
 {
     BITMAP *fond;
-    t_Perso*perso;
-    t_Mur*mur;
-    BITMAP*bacterie1,*bacterie2,*bacterie3;
-    t_Boss*boss;
+    t_Perso *perso;
+    t_Mur *mur;
+    BITMAP *bacterie1,*bacterie2,*bacterie3;
+    t_Boss *boss;
     int i;
-    int alea;
-    t_tir*premier=NULL;
-
-
+    t_tir *tirPerso=NULL;
+    BITMAP *munitionPerso;
+    munitionPerso=load_bitmap_check("munition2.bmp");
+    BITMAP *munitionEnnemie;
+    munitionEnnemie=load_bitmap_check("laser.bmp");
     t_Ennemi tabEnnemi[25];
     t_tir*missile=NULL;
+
+
     for(i=0; i<25; i++)
     {
         tabEnnemi[i].etat = 0;
@@ -558,23 +536,20 @@ int jouer(int niveau )
 
     while(!perso->fin && !mur->fin &&!key[KEY_ESC])
     {
-        alea=rand()%10;
         DeplacementPerso(perso);
         DeplacementEnnemis(tabEnnemi,mur);
         ScrollingMur(mur,perso);
         Collision(perso, mur);
-        Affichage(fond, mur, perso, tabEnnemi,NULL,premier);
         if(key[KEY_SPACE])
-            {
-               premier=AlloueMunition(premier,perso);
+        {
+            tirPerso=TirPerso(tirPerso,perso,munitionPerso);
+        }
 
-            }
-                DeplacementMunition(premier);
-
-               premier=SuppressionMunition(premier);
-               missile=TirEnnemi(tabEnnemi);
-               AffichageMunition(missile,mur,tabEnnemi);
-               rest(20);
+        tirPerso=DeplacementMunition(tirPerso);
+        missile=TirEnnemi(tabEnnemi,munitionEnnemie);
+        missile=DeplacementMunition(missile);
+        Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,missile);
+        rest(20);
 
     }
 
@@ -585,17 +560,17 @@ int jouer(int niveau )
         while(!perso->fin&& !boss->fin&& !key[KEY_ESC])
         {
             DeplacementPerso(perso);
-            Affichage(fond, mur, perso,tabEnnemi, boss,premier);
+            Affichage(fond, mur, perso,tabEnnemi, boss,tirPerso,missile);
             DeplacementBoss(boss);
             if(key[KEY_SPACE])
             {
-               premier=AlloueMunition(premier,perso);
+                tirPerso=TirPerso(tirPerso,perso,munitionPerso);
 
             }
-            DeplacementMunition(premier);
+            tirPerso=DeplacementMunition(tirPerso);
 
-               premier=SuppressionMunition(premier);
-               rest(20);
+            //tirPerso=SuppressionMunition(tirPerso);
+            rest(20);
 
         }
 
