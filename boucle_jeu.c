@@ -220,23 +220,19 @@ void ScrollingMur(t_Mur*mur,t_Perso*perso)
 void Collision(t_Perso*perso,t_Mur*mur)
 {
     //il y a collision personnage/murs si le pixel de mur au centre du personnage est noir
-    if((getpixel(mur->image,mur->posx+perso->posx,perso->posy)==0) || (getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)/2,perso->posy)==0) || (getpixel(mur->image,mur->posx+perso->posx+(perso->image->w),perso->posy)==0))
+    if((getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)*(0.35+0.5),perso->posy+(perso->image->h)*(0.35+0.5))==0))
     {
         perso->etat=MORT;
     }
-    else if(getpixel(mur->image,mur->posx+perso->posx,perso->posy+(perso->image->h)/2)==0)
+    else if((getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)*(-0.35+0.5),perso->posy+(perso->image->h)*(-0.35+0.5))==0))
     {
         perso->etat=MORT;
     }
-    else if(getpixel(mur->image,mur->posx+perso->posx,perso->posy+(perso->image->h))==0)
+    else if((getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)*(-0.35+0.5),perso->posy+(perso->image->h)*(0.35+0.5))==0))
     {
         perso->etat=MORT;
     }
-    else if(getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)/2,perso->posy+(perso->image->h))==0)
-    {
-        perso->etat=MORT;
-    }
-    else if(getpixel(mur->image,mur->posx+perso->posx+perso->image->w,perso->posy+(perso->image->h))==0)
+   else if((getpixel(mur->image,mur->posx+perso->posx+(perso->image->w)*(0.35+0.5),perso->posy+(perso->image->h)*(-0.35+0.5))==0))
     {
         perso->etat=MORT;
     }
@@ -444,9 +440,9 @@ int jouer(int niveau )
         tabEnnemi[i].etat = 0;
     }
 
-    bacterie1=load_bitmap_check("bacterie_4.bmp");
-    bacterie2=load_bitmap_check("bacterie_6.bmp");
-    bacterie3=load_bitmap_check("bacterie_11.bmp");
+    bacterie1=load_bitmap_check("Bacterie_4.bmp");
+    bacterie2=load_bitmap_check("Bacterie_6.bmp");
+    bacterie3=load_bitmap_check("Bacterie_11.bmp");
 
     switch (niveau)
     {
