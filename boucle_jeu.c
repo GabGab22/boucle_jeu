@@ -5,7 +5,11 @@
 #include <math.h>
 
 #define SCROLL 5
-
+#define REST 20
+#define PROB 100
+#define DEPXPERSO 3
+#define DEPYPERSO 3
+#define DEPMX 5
 typedef struct Mur
 {
     BITMAP*image;
@@ -81,8 +85,8 @@ t_Perso* AllouePerso()
     perso->image=load_bitmap_check("Globule_Blanc.bmp");
     perso->posx=100;
     perso->posy=200;
-    perso->depx=4;
-    perso->depy=3;
+    perso->depx=DEPXPERSO;
+    perso->depy=DEPYPERSO;
     perso->fin=0;
     perso->etat=VIVANT;
     return perso;
@@ -360,7 +364,7 @@ t_tir*TirPerso(t_tir*tirPerso,t_Perso*perso,BITMAP*munitionPerso)
         nouv->image=munitionPerso;
         nouv->posmx=perso->posx+perso->image->w-10;
         nouv->posmy=perso->posy+perso->image->h-40;
-        nouv->depmx=5;
+        nouv->depmx=DEPMX;
         nouv->etat=1;
         nouv->suiv=tirPerso;
         return nouv;
@@ -449,12 +453,12 @@ t_tir* TirEnnemi(t_tir* tirEnnemi,t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie,
     {
         if(tabEnnemi[i].etat)
         {
-            if(rand()%100==0)
+            if(rand()%PROB==0)
             {
                 ancre=(t_tir*)malloc(1*sizeof(t_tir));
                 ancre->image=munitionEnnemie;
                 ancre->etat=1;
-                ancre->depmx=-SCROLL-5;
+                ancre->depmx=-SCROLL-DEPMX;
                 ancre->posmx=tabEnnemi[i].posx-mur->posx;
                 ancre->posmy=tabEnnemi[i].posy+tabEnnemi[i].image->h/2;
                 ancre->suiv=tirEnnemi;
@@ -793,7 +797,7 @@ int jouer(int niveau )
         Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi);
         Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,tirEnnemi);
 
-        rest(20);
+        rest(REST);
 
     }
 
@@ -814,7 +818,7 @@ int jouer(int niveau )
             tirPerso=DeplacementMunition(tirPerso);
 
             //tirPerso=SuppressionMunition(tirPerso);
-            rest(20);
+            rest(REST);
 
         }
 
