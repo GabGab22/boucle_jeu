@@ -116,7 +116,7 @@ t_Mur* AlloueMur(int niveau)
 }
 
 
-void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Boss*boss,t_tir*tirPerso,t_tir*missile)
+void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Boss*boss,t_tir*tirPerso,t_tir*tirEnnemi)
 {
 
     BITMAP *page; //création d'un double buffer
@@ -134,16 +134,16 @@ void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Bo
         {
             masked_blit(tabEnnemi[i].image,page,0,0,tabEnnemi[i].posx-mur->posx,tabEnnemi[i].posy,tabEnnemi[i].image->w,tabEnnemi[i].image->h);
             //affichage des tirs ennemis
-    courant=missile;
-    while(courant!=NULL)
-    {
-        if(courant->etat==1)
-        {
-            masked_blit(courant->image,page,0,0,courant->posmx,courant->posmy,courant->image->w,courant->image->h);
-        }
-        courant=courant->suiv;
+            courant=tirEnnemi;
+            while(courant!=NULL)
+            {
+                if(courant->etat==1)
+                {
+                    masked_blit(courant->image,page,0,0,courant->posmx,courant->posmy,courant->image->w,courant->image->h);
+                }
+                courant=courant->suiv;
 
-    }
+            }
         }
 
     }
@@ -297,17 +297,21 @@ t_Boss* AlloueBoss()
 
 t_tir*TirPerso(t_tir*tirPerso,t_Perso*perso,BITMAP*munitionPerso)
 {
-    t_tir*nouv;
+    if(key[KEY_SPACE])
+    {
 
-    nouv=(t_tir*)malloc(1*sizeof(t_tir));
-    nouv->image=munitionPerso;
-    nouv->posmx=perso->posx+perso->image->w-10;
-    nouv->posmy=perso->posy+perso->image->h-40;
-    nouv->depmx=5;
-    nouv->etat=1;
-    nouv->suiv=tirPerso;
-    return nouv;
+        t_tir*nouv;
 
+        nouv=(t_tir*)malloc(1*sizeof(t_tir));
+        nouv->image=munitionPerso;
+        nouv->posmx=perso->posx+perso->image->w-10;
+        nouv->posmy=perso->posy+perso->image->h-40;
+        nouv->depmx=5;
+        nouv->etat=1;
+        nouv->suiv=tirPerso;
+        return nouv;
+    }
+    return tirPerso;
 }
 ///////////////////////////////////////////////////
 t_tir* DeplacementMunition(t_tir*tir)
@@ -324,6 +328,8 @@ t_tir* DeplacementMunition(t_tir*tir)
             courant->etat=0;
 
         }
+        printf("%d\n",courant->posmx);
+
         if(courant->etat==0)
         {
             if(courant==tir)
@@ -331,12 +337,12 @@ t_tir* DeplacementMunition(t_tir*tir)
                 tir=tir->suiv;
                 free(courant);
 
-                break;
-
             }
-            prec->suiv=courant->suiv;
+            else
+            {
+              prec->suiv=courant->suiv;
             free(courant);
-            break;
+            }
         }
         prec=courant;
         courant=courant->suiv;
@@ -369,7 +375,7 @@ void DeplacementBoss(t_Boss*boss)
 
 }
 
-t_tir* TirEnnemi(t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie)
+t_tir* TirEnnemi(t_tir* tirEnnemi,t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie)
 {
     int i;
     t_tir*ancre=NULL;
@@ -386,14 +392,15 @@ t_tir* TirEnnemi(t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie)
                 ancre->depmx=-5;
                 ancre->posmx=tabEnnemi[i].posx;
                 ancre->posmy=tabEnnemi[i].posy+tabEnnemi[i].image->h;
-                ancre->suiv=NULL;
+                ancre->suiv=tirEnnemi;
+                tirEnnemi=ancre;
                 printf("tir");
             }
         }
 
     }
 
-    return ancre;
+    return tirEnnemi;
 }
 
 int jouer(int niveau )
@@ -410,7 +417,7 @@ int jouer(int niveau )
     BITMAP *munitionEnnemie;
     munitionEnnemie=load_bitmap_check("laser.bmp");
     t_Ennemi tabEnnemi[25];
-    t_tir*missile=NULL;
+    t_tir*tirEnnemi=NULL;
 
 
     for(i=0; i<25; i++)
@@ -519,12 +526,188 @@ int jouer(int niveau )
         fond = load_bitmap_check("fond_niveau2.bmp");
         boss=AlloueBoss();
         boss->image=load_bitmap_check("Boss_2.bmp");
+        tabEnnemi[0].posx=990;
+        tabEnnemi[0].posy=140;
+        tabEnnemi[0].depy=1;
+        tabEnnemi[0].etat=1;
+        tabEnnemi[0].image=bacterie1;
+
+        tabEnnemi[1].posx=1420;
+        tabEnnemi[1].posy=250;
+        tabEnnemi[1].depy=2;
+        tabEnnemi[1].etat=1;
+        tabEnnemi[1].image=bacterie2;
+
+        tabEnnemi[2].posx=1990;
+        tabEnnemi[2].posy=140;
+        tabEnnemi[2].depy=1;
+        tabEnnemi[2].etat=1;
+        tabEnnemi[2].image=bacterie1;
+
+        tabEnnemi[3].posx=2380;
+        tabEnnemi[3].posy=270;
+        tabEnnemi[3].depy=3;
+        tabEnnemi[3].etat=1;
+        tabEnnemi[3].image=bacterie3;
+
+        tabEnnemi[4].posx=3280.;
+        tabEnnemi[4].posy=150;
+        tabEnnemi[4].depy=1;
+        tabEnnemi[4].etat=1;
+        tabEnnemi[4].image=bacterie1;
+
+        tabEnnemi[5].posx=3920;
+        tabEnnemi[5].posy=150;
+        tabEnnemi[5].depy=2;
+        tabEnnemi[5].etat=1;
+        tabEnnemi[5].image=bacterie2;
+
+        tabEnnemi[6].posx=4650;
+        tabEnnemi[6].posy=140;
+        tabEnnemi[6].depy=2;
+        tabEnnemi[6].etat=1;
+        tabEnnemi[6].image=bacterie2;
+
+        tabEnnemi[7].posx=5600;
+        tabEnnemi[7].posy=280;
+        tabEnnemi[7].depy=1;
+        tabEnnemi[7].etat=1;
+        tabEnnemi[7].image=bacterie1;
+
+        tabEnnemi[8].posx=6200;
+        tabEnnemi[8].posy=90;
+        tabEnnemi[8].depy=3;
+        tabEnnemi[8].etat=1;
+        tabEnnemi[8].image=bacterie3;
+
+        tabEnnemi[9].posx=6200;
+        tabEnnemi[9].posy=420;
+        tabEnnemi[9].depy=1;
+        tabEnnemi[9].etat=1;
+        tabEnnemi[9].image=bacterie1;
+
+        tabEnnemi[10].posx=7360;
+        tabEnnemi[10].posy=350;
+        tabEnnemi[10].depy=1;
+        tabEnnemi[10].etat=1;
+        tabEnnemi[10].image=bacterie1;
+
+        tabEnnemi[11].posx=8460;
+        tabEnnemi[11].posy=150;
+        tabEnnemi[11].depy=3;
+        tabEnnemi[11].etat=1;
+        tabEnnemi[11].image=bacterie3;
+
+
+
 
         break;
     case 3:
         fond = load_bitmap_check("fond_niveau3.bmp");
         boss=AlloueBoss();
         boss->image=load_bitmap_check("Boss_3.bmp");
+        tabEnnemi[0].posx=900;
+        tabEnnemi[0].posy=220;
+        tabEnnemi[0].depy=1;
+        tabEnnemi[0].etat=1;
+        tabEnnemi[0].image=bacterie1;
+
+        tabEnnemi[1].posx=900;
+        tabEnnemi[1].posy=380;
+        tabEnnemi[1].depy=2;
+        tabEnnemi[1].etat=1;
+        tabEnnemi[1].image=bacterie2;
+
+        tabEnnemi[2].posx=1860;
+        tabEnnemi[2].posy=100;
+        tabEnnemi[2].depy=1;
+        tabEnnemi[2].etat=1;
+        tabEnnemi[2].image=bacterie1;
+
+        tabEnnemi[3].posx=2550;
+        tabEnnemi[3].posy=80;
+        tabEnnemi[3].depy=3;
+        tabEnnemi[3].etat=1;
+        tabEnnemi[3].image=bacterie3;
+
+        tabEnnemi[4].posx=3080.;
+        tabEnnemi[4].posy=390;
+        tabEnnemi[4].depy=1;
+        tabEnnemi[4].etat=1;
+        tabEnnemi[4].image=bacterie1;
+
+        tabEnnemi[5].posx=3870;
+        tabEnnemi[5].posy=230;
+        tabEnnemi[5].depy=2;
+        tabEnnemi[5].etat=1;
+        tabEnnemi[5].image=bacterie2;
+
+        tabEnnemi[6].posx=4650;
+        tabEnnemi[6].posy=140;
+        tabEnnemi[6].depy=2;
+        tabEnnemi[6].etat=1;
+        tabEnnemi[6].image=bacterie2;
+
+        tabEnnemi[7].posx=4700;
+        tabEnnemi[7].posy=320;
+        tabEnnemi[7].depy=1;
+        tabEnnemi[7].etat=1;
+        tabEnnemi[7].image=bacterie1;
+
+        tabEnnemi[8].posx=4910;
+        tabEnnemi[8].posy=170;
+        tabEnnemi[8].depy=3;
+        tabEnnemi[8].etat=1;
+        tabEnnemi[8].image=bacterie3;
+
+        tabEnnemi[9].posx=5180;
+        tabEnnemi[9].posy=320;
+        tabEnnemi[9].depy=1;
+        tabEnnemi[9].etat=1;
+        tabEnnemi[9].image=bacterie1;
+
+        tabEnnemi[10].posx=6600;
+        tabEnnemi[10].posy=390;
+        tabEnnemi[10].depy=1;
+        tabEnnemi[10].etat=1;
+        tabEnnemi[10].image=bacterie1;
+
+        tabEnnemi[11].posx=6710;
+        tabEnnemi[11].posy=220;
+        tabEnnemi[11].depy=3;
+        tabEnnemi[11].etat=1;
+        tabEnnemi[11].image=bacterie3;
+
+        tabEnnemi[12].posx=7490;
+        tabEnnemi[12].posy=320;
+        tabEnnemi[12].depy=1;
+        tabEnnemi[12].etat=1;
+        tabEnnemi[12].image=bacterie1;
+
+        tabEnnemi[13].posx=7550;
+        tabEnnemi[13].posy=130;
+        tabEnnemi[13].depy=3;
+        tabEnnemi[13].etat=1;
+        tabEnnemi[13].image=bacterie3;
+
+        tabEnnemi[14].posx=8900;
+        tabEnnemi[14].posy=100;
+        tabEnnemi[14].depy=1;
+        tabEnnemi[14].etat=1;
+        tabEnnemi[14].image=bacterie1;
+
+        tabEnnemi[15].posx=8900;
+        tabEnnemi[15].posy=300;
+        tabEnnemi[15].depy=3;
+        tabEnnemi[15].etat=1;
+        tabEnnemi[15].image=bacterie3;
+
+        tabEnnemi[16].posx=8900;
+        tabEnnemi[16].posy=500;
+        tabEnnemi[16].depy=3;
+        tabEnnemi[16].etat=1;
+        tabEnnemi[16].image=bacterie3;
+
         break;
     }
     mur=AlloueMur(niveau);
@@ -540,15 +723,11 @@ int jouer(int niveau )
         DeplacementEnnemis(tabEnnemi,mur);
         ScrollingMur(mur,perso);
         Collision(perso, mur);
-        if(key[KEY_SPACE])
-        {
-            tirPerso=TirPerso(tirPerso,perso,munitionPerso);
-        }
-
+        tirPerso=TirPerso(tirPerso,perso,munitionPerso);
         tirPerso=DeplacementMunition(tirPerso);
-        missile=TirEnnemi(tabEnnemi,munitionEnnemie);
-        missile=DeplacementMunition(missile);
-        Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,missile);
+        tirEnnemi=TirEnnemi(tirEnnemi,tabEnnemi,munitionEnnemie);
+        tirEnnemi=DeplacementMunition(tirEnnemi);
+        Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,tirEnnemi);
         rest(20);
 
     }
@@ -560,7 +739,7 @@ int jouer(int niveau )
         while(!perso->fin&& !boss->fin&& !key[KEY_ESC])
         {
             DeplacementPerso(perso);
-            Affichage(fond, mur, perso,tabEnnemi, boss,tirPerso,missile);
+            Affichage(fond, mur, perso,tabEnnemi, boss,tirPerso,tirEnnemi);
             DeplacementBoss(boss);
             if(key[KEY_SPACE])
             {
