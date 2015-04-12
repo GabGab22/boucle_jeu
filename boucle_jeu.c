@@ -30,6 +30,7 @@ typedef struct Perso
     int depy;
     int etat; //MORT ou VIVANT
     int fin; //0 ou 1
+    int vie;
 
 } t_Perso;
 
@@ -90,6 +91,7 @@ t_Perso* AllouePerso()
     perso->depy=DEPYPERSO;
     perso->fin=0;
     perso->etat=VIVANT;
+    perso->vie=3;
     return perso;
 
 }
@@ -121,7 +123,7 @@ t_Mur* AlloueMur(int niveau)
 }
 
 
-void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Boss*boss,t_tir*tirPerso,t_tir*tirEnnemi)
+void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Boss*boss,t_tir*tirPerso,t_tir*tirEnnemi,t_tir*tirBoss)
 {
 
     BITMAP *page; //création d'un double buffer
@@ -171,8 +173,18 @@ void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Bo
 
         courant=courant->suiv;
     }
+//affichage tir boss
+courant=tirBoss;
+while(courant!=NULL)
+    {
+        if(courant->etat==1)
+        {
+            masked_blit(courant->image,page,0,0,courant->posmx,courant->posmy,courant->image->w,courant->image->h);
 
+        }
 
+        courant=courant->suiv;
+    }
 
     masked_blit(perso->image,page,0,0,perso->posx,perso->posy,perso->image->w,perso->image->h);//affichage du personnage
 
@@ -236,7 +248,7 @@ void ScrollingMur(t_Mur*mur,t_Perso*perso)
     }
 }
 
-void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi tabEnnemi[25],t_Boss*boss)
+void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi tabEnnemi[25],t_Boss*boss,t_tir*tirBoss)
 {
     //il y a collision personnage/murs si le pixel de mur
     // aux positions données du personnage est noir
@@ -334,6 +346,26 @@ int vie=0;
             }
 
             courant->etat=0;
+        }
+        courant=courant->suiv;
+    }
+
+    //collisions triBoss/perso
+    courant=tirBoss;
+
+    while(courant!=NULL)
+    {
+        if(sqrt(pow(perso->posx+perso->image->w/2-courant->posmx-courant->image->w/2,2)+pow(perso->posy+perso->image->h/2-courant->posmy-courant->image->h/2,2))<30)
+        {
+            perso->vie--;
+                printf("%d\n",perso->vie);
+                if(perso->vie==0)
+                {
+                    perso->etat=MORT;
+
+                }
+                courant->etat=0;
+
         }
         courant=courant->suiv;
     }
@@ -860,8 +892,8 @@ int jouer(int niveau )
         tirPerso=DeplacementMunition(tirPerso);
         tirEnnemi=TirEnnemi(tirEnnemi,tabEnnemi,munitionEnnemie,mur);
         tirEnnemi=DeplacementMunition(tirEnnemi);
-       //Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi,NULL);
-        Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,tirEnnemi);
+       //Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi,NULL,NULL);
+        Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,tirEnnemi,NULL);
 
         rest(REST);
 
@@ -882,8 +914,10 @@ int jouer(int niveau )
             DeplacementBoss(boss);
             tirPerso=TirPerso(tirPerso,perso,munitionPerso);
             tirPerso=DeplacementMunition(tirPerso);
-            Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi,boss);
-            Affichage(fond, mur, perso,tabEnnemi, boss,tirPerso,tirEnnemi);
+            tirBoss=TirBoss(tirBoss,boss,munitionEnnemie);
+            tirBoss=DeplacementMunition(tirBoss);
+            Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi,boss,tirBoss);
+            Affichage(fond, mur, perso,tabEnnemi, boss,tirPerso,tirEnnemi,tirBoss);
             rest(REST);
 
         }
