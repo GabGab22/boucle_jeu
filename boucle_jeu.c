@@ -163,8 +163,8 @@ void Affichage(BITMAP*fond,t_Mur*mur, t_Perso *perso,t_Ennemi tabEnnemi[25],t_Bo
         courant=courant->suiv;
     }
 //affichage tir boss
-courant=tirBoss;
-while(courant!=NULL)
+    courant=tirBoss;
+    while(courant!=NULL)
     {
         if(courant->etat==1)
         {
@@ -271,13 +271,13 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi t
         if(sqrt(pow(perso->posx+perso->image->w/2-courant->posmx-courant->image->w/2,2)+pow(perso->posy+perso->image->h/2-courant->posmy-courant->image->h/2,2))<30)
         {
             vie=vie+1;
-                printf("%d\n",vie);
-                if(vie==3)
-                {
-                    perso->etat=MORT;
+            printf("%d\n",vie);
+            if(vie==3)
+            {
+                perso->etat=MORT;
 
-                }
-                courant->etat=0;
+            }
+            courant->etat=0;
         }
         courant=courant->suiv;
     }
@@ -321,34 +321,35 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi t
 
 
 
-    //collisions boss/tirPerso
-    courant=tirPerso;
-    while(courant!=NULL)
+
+
+    if(boss!=NULL)
     {
-        if(sqrt(pow(boss->posx+boss->image->w/2-courant->posmx-courant->image->w/2,2)+pow(boss->posy+boss->image->h/2-courant->posmy-courant->image->h/2,2))<30)
+        //collisions boss/tirPerso
+        courant=tirPerso;
+        while(courant!=NULL)
         {
-            boss->vie=boss->vie--;
-            printf("%d",boss->vie);
-            if(boss->vie==0)
+            if(sqrt(pow(boss->posx+boss->image->w/2-courant->posmx-courant->image->w/2,2)+pow(boss->posy+boss->image->h/2-courant->posmy-courant->image->h/2,2))<30)
             {
-                 boss->fin=1;
+                boss->vie=boss->vie--;
+                printf("%d",boss->vie);
+                if(boss->vie==0)
+                {
+                    boss->fin=1;
+                }
+
+                courant->etat=0;
             }
-
-            courant->etat=0;
+            courant=courant->suiv;
         }
-        courant=courant->suiv;
-    }
+        //collisions triBoss/perso
+        courant=tirBoss;
 
-if(boss->fin==0)
-{
-    //collisions triBoss/perso
-    courant=tirBoss;
-
-    while(courant!=NULL)
-    {
-        if(sqrt(pow(perso->posx+perso->image->w/2-courant->posmx-courant->image->w/2,2)+pow(perso->posy+perso->image->h/2-courant->posmy-courant->image->h/2,2))<30)
+        while(courant!=NULL)
         {
-            perso->vie--;
+            if(sqrt(pow(perso->posx+perso->image->w/2-courant->posmx-courant->image->w/2,2)+pow(perso->posy+perso->image->h/2-courant->posmy-courant->image->h/2,2))<30)
+            {
+                perso->vie--;
                 printf("%d\n",perso->vie);
                 if(perso->vie==0)
                 {
@@ -357,12 +358,12 @@ if(boss->fin==0)
                 }
                 courant->etat=0;
 
+            }
+            courant=courant->suiv;
         }
-        courant=courant->suiv;
+
+
     }
-
-
-}
 
 }
 
@@ -412,25 +413,16 @@ t_tir*TirPerso(t_tir*tirPerso,t_Perso*perso,BITMAP*munitionPerso)
 
     if(key[KEY_SPACE] && perso->etat==VIVANT)
     {
-        int l=0;
-        if(l==0)
-        {
             t_tir*nouv;
 
-        nouv=(t_tir*)malloc(1*sizeof(t_tir));
-        nouv->image=munitionPerso;
-        nouv->posmx=perso->posx+perso->image->w-10;
-        nouv->posmy=perso->posy+perso->image->h-40;
-        nouv->depmx=DEPMX;
-        nouv->etat=1;
-        nouv->suiv=tirPerso;
-        return nouv;
-        l++;
-        if(l>=50)
-        {
-            l=0;
-        }
-        }
+            nouv=(t_tir*)malloc(1*sizeof(t_tir));
+            nouv->image=munitionPerso;
+            nouv->posmx=perso->posx+perso->image->w-10;
+            nouv->posmy=perso->posy+perso->image->h-40;
+            nouv->depmx=DEPMX;
+            nouv->etat=1;
+            nouv->suiv=tirPerso;
+            return nouv;
 
 
 
@@ -544,19 +536,19 @@ t_tir* TirBoss(t_tir*tirBoss,t_Boss*boss,BITMAP*munitionEnnemie)
     if(boss->fin==0)
     {
         if(rand()%50==0)
-    {
+        {
 
 
-        nouv=(t_tir*)malloc(1*sizeof(t_tir));
-        nouv->image=munitionEnnemie;
-        nouv->posmx=boss->posx;
-        nouv->posmy=boss->posy+boss->image->h/2;
-        nouv->depmx=-DEPMX;
-        nouv->etat=1;
-        nouv->suiv=tirBoss;
-        return nouv;;
+            nouv=(t_tir*)malloc(1*sizeof(t_tir));
+            nouv->image=munitionEnnemie;
+            nouv->posmx=boss->posx;
+            nouv->posmy=boss->posy+boss->image->h/2;
+            nouv->depmx=-DEPMX;
+            nouv->etat=1;
+            nouv->suiv=tirBoss;
+            return nouv;;
 
-    }
+        }
     }
 
     return tirBoss;
@@ -572,7 +564,7 @@ int jouer(int niveau )
     int i;
     t_tir *tirPerso=NULL;
     BITMAP *munitionPerso;
-    munitionPerso=("Images/munition2.bmp");
+    munitionPerso=load_bitmap_check("Images/munition2.bmp");
     BITMAP *munitionEnnemie;
     munitionEnnemie=load_bitmap_check("Images/laser.bmp");
     t_Ennemi tabEnnemi[25];
@@ -896,17 +888,17 @@ int jouer(int niveau )
     }
 
     if(key[KEY_R])
+    {
+        mur->posx=mur->image->w-800;
+        mur->fin=1;
+        for(i=0; i<25; i++)
         {
-            mur->posx=mur->image->w-800;
-            mur->fin=1;
-            for(i=0;i<25;i++)
-            {
-                tabEnnemi[i].etat=0;
+            tabEnnemi[i].etat=0;
 
-            }
-            tirPerso=NULL;
-            tirEnnemi=NULL;
         }
+        tirPerso=NULL;
+        tirEnnemi=NULL;
+    }
 
     if (mur->fin)
     {
@@ -934,7 +926,7 @@ int jouer(int niveau )
     }
     if (boss->fin)
     {
-        return 1; //gagné
+        sous_menu_jouer(); //gagné
     }
 
 

@@ -3,7 +3,7 @@
 #include <string.h>
 #include <allegro.h>
 #include <math.h>
-#include "Boucle_jeu.h"
+#include "boucle_jeu.h"
 
 
 
