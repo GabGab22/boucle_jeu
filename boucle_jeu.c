@@ -4,8 +4,8 @@
 #include <allegro.h>
 #include <math.h>
 
-#define SCROLL 5
-#define REST 20
+#define SCROLL 4
+#define REST 15
 #define PROB 100
 #define DEPXPERSO 3
 #define DEPYPERSO 3
@@ -51,6 +51,7 @@ typedef struct Boss
     int depx;
     int depy;
     int fin;
+    int vie;
 
 } t_Boss;
 
@@ -235,7 +236,7 @@ void ScrollingMur(t_Mur*mur,t_Perso*perso)
     }
 }
 
-void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi tabEnnemi[25])
+void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi tabEnnemi[25],t_Boss*boss)
 {
     //il y a collision personnage/murs si le pixel de mur
     // aux positions données du personnage est noir
@@ -263,13 +264,19 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi t
     //si cette distance est inférieure à une constante le personnage meurt et le missile disparait
     t_tir*courant;
     courant=tirEnnemi;
-
+int vie=0;
     while(courant!=NULL)
     {
         if(sqrt(pow(perso->posx+perso->image->w/2-courant->posmx-courant->image->w/2,2)+pow(perso->posy+perso->image->h/2-courant->posmy-courant->image->h/2,2))<30)
         {
-            perso->etat=MORT;
-            courant->etat=0;
+            vie++;
+                printf("%d\n",vie);
+                if(vie==3)
+                {
+                    perso->etat=MORT;
+                    courant->etat=0;
+                }
+
         }
         courant=courant->suiv;
     }
@@ -297,7 +304,6 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi t
     }
 
     //collision perso/ennemis
-
     for(i=0; i<25; i++)
     {
         if(tabEnnemi[i].etat==1)
@@ -306,11 +312,31 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi t
             {
                 perso->etat=MORT;
                 tabEnnemi[i].etat=0;
+
             }
         }
 
     }
 
+
+
+    //collisions boss/tirPerso
+    courant=tirPerso;
+    while(courant!=NULL)
+    {
+        if(sqrt(pow(boss->posx+boss->image->w/2-courant->posmx-courant->image->w/2,2)+pow(boss->posy+boss->image->h/2-courant->posmy-courant->image->h/2,2))<30)
+        {
+            boss->vie=boss->vie--;
+            printf("%d",boss->vie);
+            if(boss->vie==0)
+            {
+                 boss->fin=1;
+            }
+
+            courant->etat=0;
+        }
+        courant=courant->suiv;
+    }
 
 }
 
@@ -326,11 +352,11 @@ void DeplacementEnnemis(t_Ennemi tabEnnemi[25],t_Mur*mur)
             {
                 tabEnnemi[i].posy=tabEnnemi[i].posy+tabEnnemi[i].depy;
 
-                if(tabEnnemi[i].posy<0)
+                if(tabEnnemi[i].posy<50)
                 {
                     tabEnnemi[i].depy=-tabEnnemi[i].depy;
                 }
-                if(tabEnnemi[i].posy+tabEnnemi[i].image->h>SCREEN_H)
+                if(tabEnnemi[i].posy+tabEnnemi[i].image->h>SCREEN_H-50)
                 {
                     tabEnnemi[i].depy=-tabEnnemi[i].depy;
                 }
@@ -350,15 +376,20 @@ t_Boss* AlloueBoss()
     boss->posx=350;
     boss->posy=100;
     boss->fin=0;
+    boss->vie=50;
 
     return boss;
 }
 
 t_tir*TirPerso(t_tir*tirPerso,t_Perso*perso,BITMAP*munitionPerso)
 {
-    if(key[KEY_SPACE])
+
+    if(key[KEY_SPACE] && perso->etat==VIVANT)
     {
-        t_tir*nouv;
+        int l=0;
+        if(l==0)
+        {
+            t_tir*nouv;
 
         nouv=(t_tir*)malloc(1*sizeof(t_tir));
         nouv->image=munitionPerso;
@@ -368,7 +399,17 @@ t_tir*TirPerso(t_tir*tirPerso,t_Perso*perso,BITMAP*munitionPerso)
         nouv->etat=1;
         nouv->suiv=tirPerso;
         return nouv;
+        l++;
+        if(l>=50)
+        {
+            l=0;
+        }
+        }
+
+
+
     }
+
     return tirPerso;
 }
 ///////////////////////////////////////////////////
@@ -471,6 +512,30 @@ t_tir* TirEnnemi(t_tir* tirEnnemi,t_Ennemi tabEnnemi[25],BITMAP*munitionEnnemie,
     return tirEnnemi;
 }
 
+t_tir* TirBoss(t_tir*tirBoss,t_Boss*boss,BITMAP*munitionEnnemie)
+{
+    t_tir*nouv;
+    if(boss->fin==0)
+    {
+        if(rand()%50==0)
+    {
+
+
+        nouv=(t_tir*)malloc(1*sizeof(t_tir));
+        nouv->image=munitionEnnemie;
+        nouv->posmx=boss->posx;
+        nouv->posmy=boss->posy+boss->image->h/2;
+        nouv->depmx=-DEPMX;
+        nouv->etat=1;
+        nouv->suiv=tirBoss;
+        return nouv;;
+
+    }
+    }
+
+    return tirBoss;
+}
+
 int jouer(int niveau )
 {
     BITMAP *fond;
@@ -486,6 +551,7 @@ int jouer(int niveau )
     munitionEnnemie=load_bitmap_check("laser.bmp");
     t_Ennemi tabEnnemi[25];
     t_tir*tirEnnemi=NULL;
+    t_tir* tirBoss=NULL;
 
 
     for(i=0; i<25; i++)
@@ -557,7 +623,7 @@ int jouer(int niveau )
         tabEnnemi[8].image=bacterie3;
 
         tabEnnemi[9].posx=6857.;
-        tabEnnemi[9].posy=100;
+        tabEnnemi[9].posy=300;
         tabEnnemi[9].depy=2.9999999;
         tabEnnemi[9].etat=1;
         tabEnnemi[9].image=bacterie1;
@@ -581,7 +647,7 @@ int jouer(int niveau )
         tabEnnemi[12].image=bacterie2;
 
         tabEnnemi[13].posx=8873.;
-        tabEnnemi[13].posy=100;
+        tabEnnemi[13].posy=199;
         tabEnnemi[13].depy=-5;
         tabEnnemi[13].etat=1;
         tabEnnemi[13].image=bacterie2;
@@ -619,19 +685,19 @@ int jouer(int niveau )
         tabEnnemi[3].image=bacterie3;
 
         tabEnnemi[4].posx=3280.;
-        tabEnnemi[4].posy=150;
+        tabEnnemi[4].posy=170;
         tabEnnemi[4].depy=1;
         tabEnnemi[4].etat=1;
         tabEnnemi[4].image=bacterie1;
 
         tabEnnemi[5].posx=3920;
-        tabEnnemi[5].posy=150;
+        tabEnnemi[5].posy=163;
         tabEnnemi[5].depy=2;
         tabEnnemi[5].etat=1;
         tabEnnemi[5].image=bacterie2;
 
         tabEnnemi[6].posx=4650;
-        tabEnnemi[6].posy=140;
+        tabEnnemi[6].posy=350;
         tabEnnemi[6].depy=2;
         tabEnnemi[6].etat=1;
         tabEnnemi[6].image=bacterie2;
@@ -643,7 +709,7 @@ int jouer(int niveau )
         tabEnnemi[7].image=bacterie1;
 
         tabEnnemi[8].posx=6200;
-        tabEnnemi[8].posy=90;
+        tabEnnemi[8].posy=200;
         tabEnnemi[8].depy=3;
         tabEnnemi[8].etat=1;
         tabEnnemi[8].image=bacterie3;
@@ -794,10 +860,15 @@ int jouer(int niveau )
         tirPerso=DeplacementMunition(tirPerso);
         tirEnnemi=TirEnnemi(tirEnnemi,tabEnnemi,munitionEnnemie,mur);
         tirEnnemi=DeplacementMunition(tirEnnemi);
-        Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi);
+       //Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi,NULL);
         Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,tirEnnemi);
 
         rest(REST);
+
+        if(key[KEY_R])
+        {
+            mur->fin=1;
+        }
 
     }
 
@@ -808,16 +879,11 @@ int jouer(int niveau )
         while(!perso->fin&& !boss->fin&& !key[KEY_ESC])
         {
             DeplacementPerso(perso);
-            Affichage(fond, mur, perso,tabEnnemi, boss,tirPerso,tirEnnemi);
             DeplacementBoss(boss);
-            if(key[KEY_SPACE])
-            {
-                tirPerso=TirPerso(tirPerso,perso,munitionPerso);
-
-            }
+            tirPerso=TirPerso(tirPerso,perso,munitionPerso);
             tirPerso=DeplacementMunition(tirPerso);
-
-            //tirPerso=SuppressionMunition(tirPerso);
+            Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi,boss);
+            Affichage(fond, mur, perso,tabEnnemi, boss,tirPerso,tirEnnemi);
             rest(REST);
 
         }
