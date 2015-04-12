@@ -73,7 +73,7 @@ t_Perso* AllouePerso()
     //allocation dynamique de la structure joueur
     perso=(t_Perso*)malloc(1*sizeof(t_Perso));
     //initialisation de la structure
-    perso->image=load_bitmap_check("Globule_Blanc.bmp");
+    perso->image=load_bitmap_check("Images/Globule_Blanc.bmp");
     perso->posx=100;
     perso->posy=200;
     perso->depx=DEPXPERSO;
@@ -94,14 +94,14 @@ t_Mur* AlloueMur(int niveau)
     {
     case 1:
 
-        mur->image=load_bitmap_check("murs_niveau1.bmp");
+        mur->image=load_bitmap_check("Images/murs_niveau1.bmp");
 
         break;
     case 2:
-        mur->image=load_bitmap_check("murs_niveau2.bmp");
+        mur->image=load_bitmap_check("Images/murs_niveau2.bmp");
         break;
     case 3:
-        mur->image=load_bitmap_check("murs_niveau3.bmp");
+        mur->image=load_bitmap_check("Images/murs_niveau3.bmp");
         break;
     }
     mur->posx=0;
@@ -339,6 +339,8 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi t
         courant=courant->suiv;
     }
 
+if(boss->fin==0)
+{
     //collisions triBoss/perso
     courant=tirBoss;
 
@@ -358,6 +360,9 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi t
         }
         courant=courant->suiv;
     }
+
+
+}
 
 }
 
@@ -567,9 +572,9 @@ int jouer(int niveau )
     int i;
     t_tir *tirPerso=NULL;
     BITMAP *munitionPerso;
-    munitionPerso=load_bitmap_check("munition2.bmp");
+    munitionPerso=("Images/munition2.bmp");
     BITMAP *munitionEnnemie;
-    munitionEnnemie=load_bitmap_check("laser.bmp");
+    munitionEnnemie=load_bitmap_check("Images/laser.bmp");
     t_Ennemi tabEnnemi[25];
     t_tir*tirEnnemi=NULL;
     t_tir* tirBoss=NULL;
@@ -580,15 +585,15 @@ int jouer(int niveau )
         tabEnnemi[i].etat = 0;
     }
 
-    bacterie1=load_bitmap_check("Bacterie_4.bmp");
-    bacterie2=load_bitmap_check("Bacterie_6.bmp");
-    bacterie3=load_bitmap_check("Bacterie_11.bmp");
+    bacterie1=load_bitmap_check("Images/Bacterie_4.bmp");
+    bacterie2=load_bitmap_check("Images/Bacterie_6.bmp");
+    bacterie3=load_bitmap_check("Images/Bacterie_11.bmp");
 
     switch (niveau)
     {
     case 1:
         //chargement du niveau 1,fond, mur,....
-        fond = load_bitmap_check("fond_rouge.bmp");
+        fond = load_bitmap_check("Images/fond_rouge.bmp");
         tabEnnemi[0].posx=1593.;
         tabEnnemi[0].posy=160;
         tabEnnemi[0].depy=2;
@@ -674,13 +679,13 @@ int jouer(int niveau )
         tabEnnemi[13].image=bacterie2;
 
         boss=AlloueBoss();
-        boss->image=load_bitmap_check("Boss_1.bmp");
+        boss->image=load_bitmap_check("Images/Boss_1.bmp");
 
         break;
     case 2:
-        fond = load_bitmap_check("fond_niveau2.bmp");
+        fond = load_bitmap_check("Images/fond_niveau2.bmp");
         boss=AlloueBoss();
-        boss->image=load_bitmap_check("Boss_2.bmp");
+        boss->image=load_bitmap_check("Images/Boss_2.bmp");
         tabEnnemi[0].posx=990;
         tabEnnemi[0].posy=140;
         tabEnnemi[0].depy=1;
@@ -758,9 +763,9 @@ int jouer(int niveau )
 
         break;
     case 3:
-        fond = load_bitmap_check("fond_niveau3.bmp");
+        fond = load_bitmap_check("Images/fond_niveau3.bmp");
         boss=AlloueBoss();
-        boss->image=load_bitmap_check("Boss_3.bmp");
+        boss->image=load_bitmap_check("Images/Boss_3.bmp");
         tabEnnemi[0].posx=900;
         tabEnnemi[0].posy=220;
         tabEnnemi[0].depy=1;
@@ -881,7 +886,7 @@ int jouer(int niveau )
         tirPerso=DeplacementMunition(tirPerso);
         tirEnnemi=TirEnnemi(tirEnnemi,tabEnnemi,munitionEnnemie,mur);
         tirEnnemi=DeplacementMunition(tirEnnemi);
-       //Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi,NULL,NULL);
+        Collision(perso,mur,tirPerso,tirEnnemi,tabEnnemi,NULL,NULL);
         Affichage(fond, mur, perso, tabEnnemi,NULL,tirPerso,tirEnnemi,NULL);
 
         rest(REST);

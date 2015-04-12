@@ -33,7 +33,7 @@
 	<allegro.h>
 	<math.h>
 
-1428858216 source:f:\boucle_jeu\main.c
+1428859662 source:f:\boucle_jeu\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -43,7 +43,7 @@
 
 1428316142 f:\boucle_jeu\boucle_jeu.h
 
-1428855358 source:f:\boucle_jeu\boucle_jeu.c
+1428859176 source:f:\boucle_jeu\boucle_jeu.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
