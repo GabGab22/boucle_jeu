@@ -553,6 +553,21 @@ t_tir* TirBoss(t_tir*tirBoss,t_Boss*boss,BITMAP*munitionEnnemie)
 
     return tirBoss;
 }
+void pause()
+{
+    if(key[KEY_P])
+    {
+        clear_keybuf() ;
+        textprintf_ex(screen, font, 675, 50, makecol(250,125,255), -1, "Jeu en pause");
+        rest(250);
+        while(!key[KEY_P])
+        {
+            rest(30);
+        }
+        rest(150);
+        clear_keybuf();
+    }
+}
 
 int jouer(int niveau )
 {
@@ -871,6 +886,7 @@ int jouer(int niveau )
 
     while(!perso->fin && !mur->fin &&!key[KEY_ESC] &&!key[KEY_R])
     {
+        pause();
         DeplacementPerso(perso);
         DeplacementEnnemis(tabEnnemi,mur);
         ScrollingMur(mur,perso);
@@ -906,6 +922,7 @@ int jouer(int niveau )
 
         while(!perso->fin&& !boss->fin&& !key[KEY_ESC])
         {
+            pause();
             DeplacementPerso(perso);
             DeplacementBoss(boss);
             tirPerso=TirPerso(tirPerso,perso,munitionPerso);
