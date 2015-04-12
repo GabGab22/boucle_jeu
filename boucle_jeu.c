@@ -66,17 +66,6 @@ typedef struct tir
     struct tir* suiv;
 } t_tir;
 
-BITMAP * load_bitmap_check(char *nomImage)
-{
-    BITMAP *bmp;
-    bmp=load_bitmap(nomImage,NULL);
-    if (!bmp)
-    {
-        allegro_message("image non trouvee %s",nomImage);
-        exit(EXIT_FAILURE);
-    }
-    return bmp;
-}
 
 t_Perso* AllouePerso()
 {
@@ -276,19 +265,19 @@ void Collision(t_Perso*perso,t_Mur*mur,t_tir*tirPerso,t_tir*tirEnnemi,t_Ennemi t
     //si cette distance est inférieure à une constante le personnage meurt et le missile disparait
     t_tir*courant;
     courant=tirEnnemi;
-int vie=0;
+    int vie=0;
     while(courant!=NULL)
     {
         if(sqrt(pow(perso->posx+perso->image->w/2-courant->posmx-courant->image->w/2,2)+pow(perso->posy+perso->image->h/2-courant->posmy-courant->image->h/2,2))<30)
         {
-            vie++;
+            vie=vie+1;
                 printf("%d\n",vie);
                 if(vie==3)
                 {
                     perso->etat=MORT;
-                    courant->etat=0;
-                }
 
+                }
+                courant->etat=0;
         }
         courant=courant->suiv;
     }
@@ -408,7 +397,7 @@ t_Boss* AlloueBoss()
     boss->posx=350;
     boss->posy=100;
     boss->fin=0;
-    boss->vie=50;
+    boss->vie=4;
 
     return boss;
 }
@@ -883,7 +872,7 @@ int jouer(int niveau )
     perso=AllouePerso();
 
 
-    while(!perso->fin && !mur->fin &&!key[KEY_ESC])
+    while(!perso->fin && !mur->fin &&!key[KEY_ESC] &&!key[KEY_R])
     {
         DeplacementPerso(perso);
         DeplacementEnnemis(tabEnnemi,mur);
@@ -897,12 +886,22 @@ int jouer(int niveau )
 
         rest(REST);
 
-        if(key[KEY_R])
-        {
-            mur->fin=1;
-        }
+
 
     }
+
+    if(key[KEY_R])
+        {
+            mur->posx=mur->image->w-800;
+            mur->fin=1;
+            for(i=0;i<25;i++)
+            {
+                tabEnnemi[i].etat=0;
+
+            }
+            tirPerso=NULL;
+            tirEnnemi=NULL;
+        }
 
     if (mur->fin)
     {
